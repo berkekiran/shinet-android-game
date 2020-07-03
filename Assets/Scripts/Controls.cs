@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class Controls : MonoBehaviour
 {
     public Transform player;
+    public GameObject playerObject;
     public float speed = 5.0f;
     private bool touchStart = false;
     private Vector2 pointA;
@@ -26,47 +27,73 @@ public class Controls : MonoBehaviour
 
     void LateUpdate(){
 
-        Vector3 viewPos = player.position;
+        if(!GameMechanics.gameEnded){
 
-        viewPos.x = Mathf.Clamp(viewPos.x, screenBounds.x * -3.25f + objectWidth, screenBounds.x * 3.25f - objectWidth);
-        viewPos.y = Mathf.Clamp(viewPos.y, screenBounds.y * -1.5f + objectHeight, screenBounds.y * 1.5f - objectHeight);
-        player.position = viewPos;
+            Vector3 viewPos = player.position;
 
-    }
+            viewPos.x = Mathf.Clamp(viewPos.x, screenBounds.x * -3.25f + objectWidth, screenBounds.x * 3.25f - objectWidth);
+            viewPos.y = Mathf.Clamp(viewPos.y, screenBounds.y * -1.5f + objectHeight, screenBounds.y * 1.5f - objectHeight);
+            player.position = viewPos;
 
-    void Update(){
-
-        
-        if(Input.GetMouseButtonDown(0)){
-            pointA = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.z));
-            cursor.transform.position = pointA;
-
-            cursor.GetComponent<Image>().enabled = true;
         }
 
-        if(Input.GetMouseButton(0)){
-            touchStart = true;
+    }
+    
+    void Update(){
+
+        if(!GameMechanics.gameEnded){
+            
+            if(Input.GetMouseButtonDown(0)){
+                pointA = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, Camera.main.transform.position.z));
+                cursor.transform.position = pointA;
+
+                cursor.GetComponent<Image>().enabled = true;
+            }
+
+            if(Input.GetMouseButton(0)){
+                touchStart = true;
+                playerObject.GetComponent<Animation>().Play("CharacterWalk");
+            } else {
+                touchStart = false;
+                playerObject.GetComponent<Animation>().Stop("CharacterWalk");
+            }
+        
         } else {
-            touchStart = false;
+            playerObject.GetComponent<Animation>().Stop("CharacterWalk");
         }
 
     }
 
     private void FixedUpdate(){
 
-        Vector3 playerPos = player.position;
+        if(!GameMechanics.gameEnded){
 
-        if(touchStart){
-            Vector2 direction = cursor.up;
-            GetDirection();
-            moveCharacter(direction);
-            cursor.transform.position = new Vector2(pointA.x + direction.x, pointA.y + direction.y);
+            Vector3 playerPos = player.position;
+
+            if(touchStart){
+                Vector2 direction = cursor.up;
+
+                if(direction.x < 0)
+                    player.localScale = new Vector3(-1493.333f, 1493.333f, 1493.333f);
+                else
+                    player.localScale = new Vector3(1493.333f, 1493.333f, 1493.333f);
+
+                GetDirection();
+                moveCharacter(direction);
+                cursor.GetComponent<Image>().enabled = true;
+                cursor.transform.position = new Vector2(pointA.x + direction.x, pointA.y + direction.y);
+
+            } else {
+                cursor.GetComponent<Image>().enabled = false;
+                
+            }
+
+            transform.position = Vector3.SmoothDamp(transform.position, playerPos, ref velocity, smoothTime);
+
         } else {
             cursor.GetComponent<Image>().enabled = false;
         }
-
-        transform.position = Vector3.SmoothDamp(transform.position, playerPos, ref velocity, smoothTime);
-
+        
      }
 
     void GetDirection(){
