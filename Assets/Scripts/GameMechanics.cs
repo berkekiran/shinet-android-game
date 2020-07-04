@@ -21,6 +21,9 @@ public class GameMechanics : MonoBehaviour
     private int timeInt;
     public static bool gameEnded;
     public Transform player;
+    public AudioSource audioSource;
+    public AudioSource audioSourceEnd;
+    public AudioSource audioSourceCD;
 
     void Start()
     {
@@ -53,6 +56,7 @@ public class GameMechanics : MonoBehaviour
     }
 
     public void Replay(){
+        audioSource.Play();
         gameEnded = false;
         endUI.SetActive(false);
         gameUI.SetActive(true);
@@ -77,11 +81,15 @@ public class GameMechanics : MonoBehaviour
         if(timeFloat > 0.0f){
             timeFloat -= Time.deltaTime * 1f;
             timeInt = Mathf.RoundToInt(timeFloat);
+            if(!audioSourceCD.isPlaying && timeInt < 5)
+                audioSourceCD.Play();
         } else {
             if(coinIns.Count > 0){
                 Destroy(coinIns[coinIns.Count-1]);
                 coinIns.Clear();
             }
+            audioSourceCD.Stop();
+            audioSourceEnd.Play();
             endUI.SetActive(true);
             gameUI.SetActive(false);
             startUI.SetActive(false);

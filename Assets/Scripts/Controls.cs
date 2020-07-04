@@ -16,6 +16,7 @@ public class Controls : MonoBehaviour
     private Vector2 screenBounds;
     private float objectWidth;
     private float objectHeight;
+    public AudioSource audioSource;
 
     void Start () {
 
@@ -51,14 +52,18 @@ public class Controls : MonoBehaviour
             }
 
             if(Input.GetMouseButton(0)){
-                touchStart = true;
+                touchStart = true; 
+                if(!audioSource.isPlaying)
+                    audioSource.Play();
                 playerObject.GetComponent<Animation>().Play("CharacterWalk");
             } else {
                 touchStart = false;
+                audioSource.Stop();
                 playerObject.GetComponent<Animation>().Stop("CharacterWalk");
             }
         
         } else {
+            audioSource.Stop();
             playerObject.GetComponent<Animation>().Stop("CharacterWalk");
         }
 
